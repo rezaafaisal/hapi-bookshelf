@@ -4,13 +4,13 @@ import { addBook, getBooks, getBook, editBook, deleteBook } from "./controller.j
 const route = [
     {
         method: "GET",
-        path: "/",
+        path: "/books",
         handler: getBooks,
         
     },
      {
         method: "GET",
-        path: "/{id}",
+        path: "/books/{id}",
         handler: getBook,
         
     },
@@ -31,12 +31,12 @@ const route = [
     },
     {
         method: "PUT",
-        path: "/{id}",
+        path: "/books/{id}",
         handler: editBook
     },
     {
         method : "DELETE",
-        path: "/{id}",
+        path: "/books/{id}",
         handler: deleteBook
     }
 ]
