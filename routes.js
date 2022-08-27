@@ -16,18 +16,8 @@ const route = [
     },
     {
         method: "POST",
-        path: "/",
+        path: "/books",
         handler: addBook,
-        options: {
-            validate: {
-                payload: Joi.object({
-                    judul: Joi.string().min(3),
-                    penulis: Joi.string().min(3),
-                    tahun: Joi.number(),
-                    kategori: Joi.string().min(3),
-                })
-            }
-        }
     },
     {
         method: "PUT",
@@ -38,7 +28,7 @@ const route = [
         method : "DELETE",
         path: "/books/{id}",
         handler: deleteBook
-    }
+    },
 ]
 
 export default route

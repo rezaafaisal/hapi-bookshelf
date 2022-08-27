@@ -8,7 +8,13 @@ const replyError = (status, message) => {
    }
 }
 
-const replySuccess = (status, message, data) => {
+const replySuccess = (status, message, data = null) => {
+   if(data == null){
+      return {
+         status: status,
+         message: message
+      }
+   }
    return {
       status: status,
       message: message,
@@ -17,29 +23,36 @@ const replySuccess = (status, message, data) => {
 }
 
 const getBooks = (res, h) => {
-      return h.response(replySuccess('success', {books: books})).code(200)
+      const simpleBooks = books.map((book) => {
+         return {
+            id:book.id,
+            name: book.name,
+            publisher: book.publisher
+         }
+      })
+      return h.response(replySuccess('success', {books: simpleBooks})).code(200)
    }
 
 const getBook = (res, h) => {
-   // const id = res.params.id
-   // const book = books.find(item => item.id == id)
-   // if(book){
-   //    return h.response(reply(true, 'Berhasil', book))
-   // }
+   const id = res.params.id
+   const book = books.find(item => item.id == id)
+   if(book){
+      return h.response(replySuccess("success", 'Berhasil', {book:book})).code(200)
+   }
 
-   // return h.response(reply(false, 'Gagal mengambil buku'))
+   return h.response(replyError("fail", 'Buku tidak ditemukan')).code(404)
 }
 
 const addBook = (res, h) => {
-   if(res.payload.name == null) return {
+   if(res.payload.name == null) return h.response({
       status: "fail",
       message: "Gagal menambahkan buku, Mohon isi nama buku"
-   }
+   }).code(400)
    const {name, year, author, summary, publisher, pageCount, readPage, reading} = res.payload
    
    const id = nanoid(10)
    let finished = false
-   if(readPage > pageCount) return h.response(replyError("fail", "Gagal menambahkan buku. readPage tidak boleh lebih besar dari pageCount"))
+   if(readPage > pageCount) return h.response(replyError("fail", "Gagal menambahkan buku. readPage tidak boleh lebih besar dari pageCount")).code(400)
    if(pageCount == readPage) finished = true
    const insertedAt = new Date().toISOString();
    const updatedAt = insertedAt
@@ -54,39 +67,51 @@ const addBook = (res, h) => {
    if(success){
       return h.response(replySuccess("success", {bookId: id})).code(201)
    }
-   return h.response("Gagal gengs").code(500)
+   return h.response(
+      replyError("error", "Buku gagal ditambahkan")
+   ).code(500)
 }
 
 const editBook = (res, h) => {
-   // const id = res.params.id
-   // const {judul, penulis, tahun, kategori} = res.payload
-   // const updated_at = new Date().toISOString()
-   
-   // const index = books.findIndex(item => item.id == id)
-   // if(index > -1){
-   //    books[index] = {
-   //       ...books[index],
-   //       judul,
-   //       penulis,
-   //       tahun,
-   //       kategori,
-   //       updated_at
-   //    }
-   //    return h.response(reply(true, 'Berhasil mengubah buku', books[index]))
-   // }
+   if(res.payload.name == null) return h.response({
+      status: "fail",
+      message: "Gagal menambahkan buku, Mohon isi nama buku"
+   }).code(400)
+   const id = res.params.id
+   const {name, year, author, summary, publisher, pageCount, readPage, reading} = res.payload
 
-   // return h.response(reply(false, 'Gagal mengedit buku'))
+   let finished = false
+   if(readPage > pageCount) return h.response(replyError("fail", "Gagal menambahkan buku. readPage tidak boleh lebih besar dari pageCount")).code(400)
+   if(pageCount == readPage) finished = true
+   const updatedAt = new Date().toISOString()
+   
+   const index = books.findIndex(item => item.id == id)
+   if(books.filter((book)=> book.id == id).length == 0){
+      return h.response(replyError("fail", "Gagal memperbarui buku. Id tidak ditemukan")).code(404)
+   }
+   // return index
+   if(index > -1){
+      books[index] = {
+         ...books[index],
+         name, year, author, summary, publisher, pageCount, readPage, reading, updatedAt
+      }
+      return h.response(replySuccess("success", "Buku berhasil diperbarui")).code(200)
+   }
+   return h.response(replyError("error", "Terjadi Kesalahan")).code(500)
 }
 
 const deleteBook = (res, h) => {
-   // const id = res.params.id
-   // const index = books.findIndex(item => item.id == id)
-   // if(index >= 0){
-   //    books.splice(index, 1)
-   //    return h.response(reply(true, 'Berhasil dihapus'))
-   // }
+   const id = res.params.id
+   const index = books.findIndex(item => item.id == id)
+   if(books.filter((book)=> book.id == id).length == 0){
+      return h.response(replyError("fail", 'Buku gagal dihapus. Id tidak ditemukan'))
+   }
+   if(index >= 0){
+      books.splice(index, 1)
+      return h.response(replySuccess("success", 'Buku berhasil dihapus'))
+   }
+      return h.response(replyError("error", 'Buku gagal dihapus'))
 
-   // return h.response(reply(false, 'Gagal menghapus buku'))
 }
    
 export { getBooks, addBook, getBook, editBook, deleteBook}
