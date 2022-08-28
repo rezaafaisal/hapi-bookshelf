@@ -30,7 +30,7 @@ const getBooks = (res, h) => {
             publisher: book.publisher
          }
       })
-      return h.response(replySuccess('success', {books: simpleBooks})).code(200)
+      return h.response(replySuccess('success', 'Berhasil mengambil data buku', {books: simpleBooks})).code(200)
    }
 
 const getBook = (res, h) => {
